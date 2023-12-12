@@ -32,7 +32,6 @@ async def create_item(item: Item):
 
 @app.put("/items/")
 async def update_item(item: Item):
-    item_to_update = item
     if item.name in itens:
         itens[item.name] = item
         return item
