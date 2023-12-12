@@ -1,32 +1,40 @@
 ## FastAPI - Construção de API
 ## Uvicorn - Hospedagem da API local
-    # uvicorn main:app --reload
+# uvicorn main:app --reload
 
 # Fast
 # Documentação automática (/docs)
 # Gerenciamento de processos assíncronos
 
 from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Union
 
 app = FastAPI()
 
-saidas = {
-    1: {"item": "Coca-Cola Lata", "preco_unitario": 3.50, "quantidade": 12},
-    2: {"item": "Coca-Cola Litro", "preco_unitario": 5.60, "quantidade": 2},
-    3: {"item": "Chocolate", "preco_unitario": 5, "quantidade": 1},
-    4: {"item": "Leite", "preco_unitario": 2.70, "quantidade": 3},
-    5: {"item": "Miojo", "preco_unitario": 0.50, "quantidade": 10},
-}
+itens = {} # Simulating a Database
+class Item(BaseModel):
+    name: str
+    price: float
+    is_offer: Union[bool, None] = None
 
 @app.get("/")
 def home():
     return "HOME"
 
-@app.get("/vendas")
-def vendas():
-    return {"Vendas:": len(saidas)}
+@app.get("/items/", response_model=itens)
+async def read_items():
+    return itens
+@app.post("/items/", response_model=Item)
+async def create_item(item: Item):
+    itens[item.name] = item
+    return item
 
-@app.get("/vendas/{id_venda}")
-def venda_por_id(id_venda: int):
-    return saidas[id_venda]
-
+@app.put("/items/")
+async def update_item(item: Item):
+    item_to_update = item
+    if item.name in itens:
+        itens[item.name] = item
+        return item
+    else:
+        return {"Item not found."}
